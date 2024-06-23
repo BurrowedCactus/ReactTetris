@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "format": "prettier --write .",
+    "lint": "next lint",
+    "formatAndLint": "yarn format && yarn lint"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.5",
+    "@types/react-redux": "^7.1.33",
+    "@types/redux": "^3.6.0",
     "next": "14.2.4",
     "p5": "^1.9.4",
     "react": "^18",

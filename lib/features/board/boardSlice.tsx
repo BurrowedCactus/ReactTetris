@@ -28,7 +28,18 @@ const boardSlice = createSlice({
 
 // Utility function to create an empty grid
 function createInitialGrid() {
-  return Array.from({ length: 20 }, () => Array(10).fill(""));
+  const arr = Array.from({ length: 25 }, () => Array(10).fill(" "));
+  arr[0] = [" ", "i", "i", "i", "i", " ", " ", " ", "l", "l"];
+  arr[1] = [" ", " ", "t", "t", "t", " ", " ", " ", "l", " "];
+  arr[2] = [" ", " ", " ", "t", " ", " ", " ", " ", "l", " "];
+  arr[3] = [" ", " ", " ", "i", " ", " ", " ", " ", " ", " "];
+  arr[4] = [" ", " ", " ", "i", " ", " ", " ", " ", " ", " "];
+  arr[5] = [" ", " ", " ", "i", " ", " ", " ", " ", " ", " "];
+  arr[6] = [" ", " ", " ", "i", " ", " ", " ", " ", " ", " "];
+  arr[7] = [" ", " ", " ", " ", "j", " ", " ", " ", " ", " "];
+  arr[8] = [" ", " ", " ", " ", "j", " ", " ", " ", " ", " "];
+  arr[9] = [" ", " ", " ", " ", "j", "j", " ", " ", " ", " "];
+  return arr;
 }
 
 export const { resetBoard } = boardSlice.actions;

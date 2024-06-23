@@ -1,10 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import boardSlice from "./features/board/boardSlice";
+import currentSlice from "./features/current/currentSlice";
+import nextSlice from "./features/next/nextSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       board: boardSlice,
+      current: currentSlice,
+      next: nextSlice,
     },
   });
 };
