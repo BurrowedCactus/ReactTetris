@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 // Define the initial state of the current
 const initialState = {
-  row: 21,
+  //row: 21,
+  row: 10,
   column: 5,
   type: "j",
   orientation: "up",

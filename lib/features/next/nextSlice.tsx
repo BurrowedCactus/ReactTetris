@@ -1,52 +1,41 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Define the initial state of the next
-const initialState = {
-  queue: [] as string[],
-};
-
-function* generate7Bag() {
+function shuffleBag() {
   const pieces = ["i", "o", "s", "z", "t", "j", "l"];
-
-  while (true) {
-    // Fisher-Yates Shuffle Algorithm
-    for (let i = pieces.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
-    }
-
-    for (const piece of pieces) {
-      yield piece;
-    }
+  for (let i = pieces.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
   }
+  return pieces;
 }
 
-const pieceGenerator = generate7Bag();
+function generateDoubleBag() {
+  return shuffleBag().concat(shuffleBag());
+}
+
+const initialState = {
+  queue: generateDoubleBag(),
+};
 
 const nextSlice = createSlice({
   name: "next",
   initialState,
   reducers: {
-    refillQueue: (state) => {
-      while (state.queue.length < 5) {
-        const newPiece = pieceGenerator.next().value;
-        if (newPiece) {
-          state.queue.push(newPiece);
-        }
+    takeNextPiece: (state) => {
+      state.queue.shift(); // This will remove the first element in the queue
+      // Refill the queue if necessary
+      if (state.queue.length < 7) {
+        state.queue = state.queue.concat(shuffleBag());
       }
     },
-    pieceLocked: {
-      reducer: (state) => {
-        return state;
-      },
-      prepare: () => {
-        return { meta: "", error: "", payload: 2 };
-      },
+    refillQueue: (state) => {
+      if (state.queue.length < 7) {
+        state.queue = state.queue.concat(shuffleBag());
+      }
     },
   },
 });
 
-export const { refillQueue } = nextSlice.actions;
-export { pieceGenerator };
+export const { takeNextPiece, refillQueue } = nextSlice.actions;
 
 export default nextSlice.reducer;

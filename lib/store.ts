@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import boardSlice from "./features/board/boardSlice";
 import currentSlice from "./features/current/currentSlice";
 import nextSlice from "./features/next/nextSlice";
+import lockDelaySlice from "./features/lockDelay/lockDelaySlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -9,6 +10,7 @@ export const makeStore = () => {
       board: boardSlice,
       current: currentSlice,
       next: nextSlice,
+      lockDelay: lockDelaySlice,
     },
   });
 };

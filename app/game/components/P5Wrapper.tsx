@@ -11,6 +11,7 @@ const P5Wrapper = () => {
   const [sketchController, setController] = useState<p5 | null>(null);
   const board = useAppSelector((state) => state.board);
   const current = useAppSelector((state) => state.current);
+  const next = useAppSelector((state) => state.next);
   // const [tick, setTick] = useState(0);
   const dispatch = useAppDispatch();
 
@@ -31,7 +32,7 @@ const P5Wrapper = () => {
       // Update game state based on logic
     };
 
-    const intervalId = setInterval(gameTick, 1000 / 10); // 10 FPS game tick
+    const intervalId = setInterval(gameTick, 1000 / 60); // 10 FPS game tick
     return () => clearInterval(intervalId); // Clean up the interval on component unmount
   }, [dispatch]);
 
@@ -54,6 +55,39 @@ const P5Wrapper = () => {
       }
     },
     [current],
+  );
+
+  const drawNextPieces = useCallback(
+    (p: p5, cellSize: number, queue: string[]) => {
+      const startX = board.grid[0].length * cellSize + 20; // Start drawing 20 pixels to the right of the board
+      let startY = 20; // Start drawing 20 pixels from the top
+
+      queue.slice(0, 5).forEach((type, index) => {
+        const shapes = getPieceShapes(type, "up");
+        const pieceSize = index === 0 ? cellSize * 1.2 : cellSize; // Increase size for the first piece
+        const color = getColorForPiece(type, 0);
+
+        p.fill(color);
+        p.stroke(255); // White border for each block of the piece
+
+        // Calculate height offset for each piece
+        let pieceHeight = 0;
+        shapes.forEach((row, i) => {
+          for (let j = 0; j < row.length; j++) {
+            if (row[j] !== " ") {
+              const x = startX + j * pieceSize;
+              const y = startY + i * pieceSize;
+              p.rect(x, y, pieceSize, pieceSize);
+              pieceHeight = Math.max(pieceHeight, i * pieceSize);
+            }
+          }
+        });
+
+        // Update startY for the next piece
+        startY += pieceHeight + 10 + pieceSize; // Add spacing between pieces
+      });
+    },
+    [board.grid],
   );
 
   const drawSketch = useCallback(
@@ -93,8 +127,9 @@ const P5Wrapper = () => {
 
       // Draw current piece
       drawCurrentPiece(p, cellSize, board.grid);
+      drawNextPieces(p, cellSize, next.queue);
     },
-    [board, drawCurrentPiece],
+    [board, drawCurrentPiece, drawNextPieces, next],
   ); // Dependency on the board state // Dependency on the board state
 
   useEffect(() => {
