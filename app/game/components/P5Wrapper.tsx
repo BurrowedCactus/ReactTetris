@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback, useState } from "react";
-import { getColorForPiece, getPieceShapes } from "./pieceShape";
+import {
+  getColorForPiece,
+  getPieceShapes,
+} from "../../../lib/utils/pieceShape";
 import { useAppDispatch, useAppSelector } from "./../../../lib/hooks";
 import { moveCurrentPiece } from "./../../../lib/features/current/currentThunk";
+import { useTetrisControls } from "./useTetrisControls";
 import p5 from "p5";
 
 const P5Wrapper = () => {
@@ -14,15 +18,13 @@ const P5Wrapper = () => {
   const next = useAppSelector((state) => state.next);
   // const [tick, setTick] = useState(0);
   const dispatch = useAppDispatch();
-
-  // useEffect(() => {
-  //   // Initialize game when component mounts
-  //   dispatch(initializeBoard());
-  // }, []);
+  useTetrisControls();
 
   useEffect(() => {
     let lastPos = 0;
     let tick = 0;
+
+    // dispatch(rotateCurrentPiece('clockwise'));
     const gameTick = () => {
       tick += 1;
       if (tick / 10 >= lastPos) {
@@ -32,7 +34,7 @@ const P5Wrapper = () => {
       // Update game state based on logic
     };
 
-    const intervalId = setInterval(gameTick, 1000 / 60); // 10 FPS game tick
+    const intervalId = setInterval(gameTick, 1000 / 10); // 10 FPS game tick
     return () => clearInterval(intervalId); // Clean up the interval on component unmount
   }, [dispatch]);
 
@@ -40,15 +42,15 @@ const P5Wrapper = () => {
     (p: p5, cellSize: number, grid: (typeof board)["grid"]) => {
       const color = getColorForPiece(current.type, current.row);
       const shape = getPieceShapes(current.type, current.orientation);
-
       for (let i = 0; i < shape.length; i++) {
         for (let j = 0; j < shape[i].length; j++) {
           if (shape[i][j] !== " ") {
-            const x = (current.column + j) * cellSize;
-            const y =
-              (grid.length - (current.row - i) - shape.length) * cellSize;
+            const col = current.column + j;
+            const row = current.row + i;
+            const x = col * cellSize;
+            const y = (grid.length - 1 - row) * cellSize;
             p.fill(color);
-            p.stroke(255); // White border for each block of the piece
+            p.stroke(255);
             p.rect(x, y, cellSize, cellSize);
           }
         }
@@ -76,7 +78,7 @@ const P5Wrapper = () => {
           for (let j = 0; j < row.length; j++) {
             if (row[j] !== " ") {
               const x = startX + j * pieceSize;
-              const y = startY + i * pieceSize;
+              const y = startY + (shapes.length - i - 1) * pieceSize;
               p.rect(x, y, pieceSize, pieceSize);
               pieceHeight = Math.max(pieceHeight, i * pieceSize);
             }

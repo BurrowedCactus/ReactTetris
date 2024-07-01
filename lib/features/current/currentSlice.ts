@@ -1,3 +1,5 @@
+import { BlockType } from "@/types/blocks";
+import { Orientation } from "@/types/directions";
 import { createSlice } from "@reduxjs/toolkit";
 // import { getNext } from "../next/nextSlice";
 
@@ -6,8 +8,8 @@ const initialState = {
   //row: 21,
   row: 10,
   column: 5,
-  type: "j",
-  orientation: "up",
+  type: BlockType.J,
+  orientation: Orientation.UP,
 };
 
 const currentSlice = createSlice({
@@ -22,24 +24,21 @@ const currentSlice = createSlice({
         ...state,
         row: action.payload.row,
         column: action.payload.column,
+        orientation: action.payload.orientation,
       };
       // handle tetromino movement
-    },
-    rotate: (state) => {
-      return state;
-      // handle tetromino rotation
     },
     setCurrent: (_, action) => {
       return {
         row: 20,
-        column: 0,
+        column: action.payload === BlockType.O ? 4 : 3,
         type: action.payload,
-        orientation: "up",
+        orientation: Orientation.UP,
       };
     },
   },
 });
 
-export const { hardDrop, move, rotate, setCurrent } = currentSlice.actions;
+export const { hardDrop, move, setCurrent } = currentSlice.actions;
 
 export default currentSlice.reducer;

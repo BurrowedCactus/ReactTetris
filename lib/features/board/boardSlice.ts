@@ -1,4 +1,4 @@
-import { getPieceShapes } from "@/app/game/components/pieceShape";
+import { getPieceShapes } from "../../utils/pieceShape";
 import { createSlice } from "@reduxjs/toolkit";
 
 // Define the initial state of the board
@@ -31,8 +31,8 @@ const boardSlice = createSlice({
           // does not overlap with 'S' remains visible. This check prevents the new piece
           // from overwriting non-empty parts of the grid, preserving the visible parts of
           // underlying pieces that are not directly covered by the new piece.
-          if (newGrid[row + shape.length - i - 1][column + j] === " ") {
-            newGrid[row + shape.length - i - 1][column + j] = shape[i][j];
+          if (newGrid[row + i][column + j] === " ") {
+            newGrid[row + i][column + j] = shape[i][j];
           }
         }
       }
