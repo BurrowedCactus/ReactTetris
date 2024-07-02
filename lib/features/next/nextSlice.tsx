@@ -1,7 +1,16 @@
+import { PieceType } from "@/types/pieces";
 import { createSlice } from "@reduxjs/toolkit";
 
 function shuffleBag() {
-  const pieces = ["i", "o", "s", "z", "t", "j", "l"];
+  const pieces = [
+    PieceType.I,
+    PieceType.O,
+    PieceType.S,
+    PieceType.Z,
+    PieceType.T,
+    PieceType.J,
+    PieceType.L,
+  ];
   for (let i = pieces.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pieces[i], pieces[j]] = [pieces[j], pieces[i]];

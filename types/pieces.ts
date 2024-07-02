@@ -1,4 +1,4 @@
-export enum BlockType {
+export enum PieceType {
   S = "s",
   Z = "z",
   I = "i",

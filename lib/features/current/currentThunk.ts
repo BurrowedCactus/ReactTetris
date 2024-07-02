@@ -3,12 +3,12 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 import { move, setCurrent } from "./currentSlice";
 import { startLockDelay, clearLockDelay } from "./../lockDelay/lockDelaySlice";
-import { isValidMove, isTouchingBottomOrBlocked } from "../../utils/pieceShape";
+import { isValidMove } from "../../utils/pieceShape";
 import { takeNextPiece } from "./../next/nextSlice";
 import { writePieceToBoard, checkForLineClears } from "./../board/boardSlice";
 
 import { Orientation, MoveDirection } from "@/types/directions";
-import { BlockType } from "@/types/blocks";
+import { PieceType } from "@/types/pieces";
 
 export const moveCurrentPiece = createAsyncThunk(
   "current/move",
@@ -37,10 +37,10 @@ export const moveCurrentPiece = createAsyncThunk(
       );
       // Check for pieces directly below
       if (
-        isTouchingBottomOrBlocked(
+        !isValidMove(
           current.type,
           {
-            newRow,
+            newRow: newRow - 1,
             newColumn,
             newOrientation: current.orientation,
           },
@@ -49,8 +49,9 @@ export const moveCurrentPiece = createAsyncThunk(
       ) {
         if (!lockDelay.isActive) {
           const timerId = window.setTimeout(() => {
+            console.log("yes lock piece 1");
             dispatch(lockPiece());
-          }, 1000); // set lock delay time
+          }, 5000); // set lock delay time
           dispatch(startLockDelay(timerId));
         }
       } else {
@@ -59,9 +60,44 @@ export const moveCurrentPiece = createAsyncThunk(
           dispatch(clearLockDelay());
         }
       }
-    } else {
-      console.log("Move is not valid");
     }
+  },
+);
+
+export const dropCurrentPiece = createAsyncThunk(
+  "current/drop",
+  (_, { getState, dispatch }) => {
+    const state = getState() as RootState;
+    const { current, board } = state;
+
+    // keeps moving the current piece downward until reaching obstacles
+    let stoppingRow = current.row;
+    while (true) {
+      if (
+        isValidMove(
+          current.type,
+          {
+            newRow: stoppingRow - 1,
+            newColumn: current.column,
+            newOrientation: current.orientation,
+          },
+          board,
+        )
+      ) {
+        stoppingRow -= 1;
+      } else {
+        dispatch(
+          move({
+            row: stoppingRow,
+            column: current.column,
+            orientation: current.orientation,
+          }),
+        );
+        break;
+      }
+    }
+    console.log("yes lock piece 2");
+    dispatch(lockPiece());
   },
 );
 
@@ -88,7 +124,7 @@ const calculateNewPosition = (
   current: {
     row: number;
     column: number;
-    type: BlockType;
+    type: PieceType;
     orientation: Orientation;
   },
   direction: MoveDirection,

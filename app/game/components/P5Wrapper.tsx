@@ -1,14 +1,21 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback, useState } from "react";
-import {
-  getColorForPiece,
-  getPieceShapes,
-} from "../../../lib/utils/pieceShape";
-import { useAppDispatch, useAppSelector } from "./../../../lib/hooks";
-import { moveCurrentPiece } from "./../../../lib/features/current/currentThunk";
+import { getColorForPiece } from "../../../lib/utils/pieceShape";
+import { useAppSelector } from "./../../../lib/hooks";
 import { useTetrisControls } from "./useTetrisControls";
+import { useGameTick } from "./useGameTick";
 import p5 from "p5";
+import drawTetrisPiece from "./drawTetrisPiece";
+import { PieceType } from "@/types/pieces";
+import { Orientation } from "@/types/directions";
+import { RootState } from "@/lib/store";
+
+const PADDING_DISTANCE = 20;
+const cellSize = 20; // Size of each cell
+const officialBoardHeight = 20; // Official game area height
+const HOLD_WIDTH = PADDING_DISTANCE + 4 * cellSize + PADDING_DISTANCE;
+const BOARD_WIDTH = 10 * cellSize + PADDING_DISTANCE;
 
 const P5Wrapper = () => {
   const sketchRef = useRef<HTMLDivElement>(null);
@@ -16,97 +23,79 @@ const P5Wrapper = () => {
   const board = useAppSelector((state) => state.board);
   const current = useAppSelector((state) => state.current);
   const next = useAppSelector((state) => state.next);
-  // const [tick, setTick] = useState(0);
-  const dispatch = useAppDispatch();
+  const hold = useAppSelector((state) => state.hold);
   useTetrisControls();
+  useGameTick();
 
-  useEffect(() => {
-    let lastPos = 0;
-    let tick = 0;
-
-    // dispatch(rotateCurrentPiece('clockwise'));
-    const gameTick = () => {
-      tick += 1;
-      if (tick / 10 >= lastPos) {
-        lastPos += 1;
-        dispatch(moveCurrentPiece("down"));
-      }
-      // Update game state based on logic
-    };
-
-    const intervalId = setInterval(gameTick, 1000 / 10); // 10 FPS game tick
-    return () => clearInterval(intervalId); // Clean up the interval on component unmount
-  }, [dispatch]);
-
-  const drawCurrentPiece = useCallback(
-    (p: p5, cellSize: number, grid: (typeof board)["grid"]) => {
-      const color = getColorForPiece(current.type, current.row);
-      const shape = getPieceShapes(current.type, current.orientation);
-      for (let i = 0; i < shape.length; i++) {
-        for (let j = 0; j < shape[i].length; j++) {
-          if (shape[i][j] !== " ") {
-            const col = current.column + j;
-            const row = current.row + i;
-            const x = col * cellSize;
-            const y = (grid.length - 1 - row) * cellSize;
-            p.fill(color);
-            p.stroke(255);
-            p.rect(x, y, cellSize, cellSize);
-          }
-        }
-      }
+  const drawHoldPiece = useCallback(
+    (p: p5, cellSize: number, type: PieceType) => {
+      drawTetrisPiece({
+        p,
+        type,
+        orientation: Orientation.UP,
+        canvasX: PADDING_DISTANCE,
+        canvasY: 2 * PADDING_DISTANCE,
+        cellSize,
+      });
     },
-    [current],
+    [],
   );
 
-  const drawNextPieces = useCallback(
-    (p: p5, cellSize: number, queue: string[]) => {
-      const startX = board.grid[0].length * cellSize + 20; // Start drawing 20 pixels to the right of the board
-      let startY = 20; // Start drawing 20 pixels from the top
-
-      queue.slice(0, 5).forEach((type, index) => {
-        const shapes = getPieceShapes(type, "up");
-        const pieceSize = index === 0 ? cellSize * 1.2 : cellSize; // Increase size for the first piece
-        const color = getColorForPiece(type, 0);
-
-        p.fill(color);
-        p.stroke(255); // White border for each block of the piece
-
-        // Calculate height offset for each piece
-        let pieceHeight = 0;
-        shapes.forEach((row, i) => {
-          for (let j = 0; j < row.length; j++) {
-            if (row[j] !== " ") {
-              const x = startX + j * pieceSize;
-              const y = startY + (shapes.length - i - 1) * pieceSize;
-              p.rect(x, y, pieceSize, pieceSize);
-              pieceHeight = Math.max(pieceHeight, i * pieceSize);
-            }
-          }
-        });
-
-        // Update startY for the next piece
-        startY += pieceHeight + 10 + pieceSize; // Add spacing between pieces
+  const drawCurrentPiece = useCallback(
+    (p: p5, cellSize: number, current: RootState["current"]) => {
+      drawTetrisPiece({
+        p,
+        type: current.type,
+        orientation: current.orientation,
+        canvasX: HOLD_WIDTH + current.column * cellSize,
+        canvasY:
+          PADDING_DISTANCE + (board.grid.length - 1 - current.row) * cellSize,
+        cellSize,
       });
     },
     [board.grid],
   );
 
-  const drawSketch = useCallback(
-    (p: p5) => {
+  const drawNextPieces = useCallback(
+    (p: p5, cellSize: number, queue: PieceType[]) => {
+      const startX = HOLD_WIDTH + BOARD_WIDTH; // Start drawing 20 pixels to the right of the board
+      let startY = 2 * PADDING_DISTANCE; // Start drawing 20 pixels from the top
+      queue.slice(0, 5).forEach((type, index) => {
+        const pieceSize = index === 0 ? cellSize * 1.2 : cellSize;
+        drawTetrisPiece({
+          p,
+          type,
+          orientation: Orientation.UP,
+          canvasX: startX,
+          canvasY: startY,
+          cellSize: pieceSize,
+        });
+        startY += 2 * cellSize + 10 + pieceSize; // Add spacing between pieces
+      });
+    },
+    [],
+  );
+
+  const drawBoard = useCallback(
+    (p: p5, cellSize: number, grid: (typeof board)["grid"]) => {
+      const startX = HOLD_WIDTH;
+      const startY = PADDING_DISTANCE;
+
       p.background(0); // Set background to black
-      const cellSize = 20; // Size of each cell
-      const grid = board.grid; // Access the grid from Redux state
-      const officialBoardHeight = 20; // Official game area height
 
       // Draw the border of the board
       p.stroke(255); // White color for the borders
       p.noFill();
       // p.rect(0, 0, cellSize * grid[0].length, cellSize * 40);
-      p.rect(0, 0, cellSize * grid[0].length, cellSize * officialBoardHeight);
       p.rect(
-        0,
-        0,
+        startX,
+        startY,
+        cellSize * grid[0].length,
+        cellSize * officialBoardHeight,
+      );
+      p.rect(
+        startX,
+        startY,
         cellSize * grid[0].length,
         cellSize * (grid.length - officialBoardHeight),
       );
@@ -123,16 +112,32 @@ const P5Wrapper = () => {
           const y = (grid.length - 1 - row) * cellSize; // Calculate y from the bottom
           p.fill(getColorForPiece(piece, row));
           p.stroke(255); // White color for cell borders
-          p.rect(col * cellSize, y, cellSize, cellSize);
+          p.rect(startX + col * cellSize, startY + y, cellSize, cellSize);
         }
       }
-
-      // Draw current piece
-      drawCurrentPiece(p, cellSize, board.grid);
-      drawNextPieces(p, cellSize, next.queue);
     },
-    [board, drawCurrentPiece, drawNextPieces, next],
-  ); // Dependency on the board state // Dependency on the board state
+    [],
+  );
+
+  const drawSketch = useCallback(
+    (p: p5) => {
+      // Draw current piece
+      drawBoard(p, cellSize, board.grid);
+      drawCurrentPiece(p, cellSize, current);
+      drawNextPieces(p, cellSize, next.queue);
+      drawHoldPiece(p, cellSize, hold.type);
+    },
+    [
+      drawBoard,
+      drawCurrentPiece,
+      drawNextPieces,
+      drawHoldPiece,
+      board,
+      next,
+      hold,
+      current,
+    ],
+  ); // Dependency on the board state
 
   useEffect(() => {
     if (sketchRef.current) {
@@ -165,7 +170,7 @@ const P5Wrapper = () => {
   }, [sketchController, drawSketch]); // Redraw when dependencies change
 
   return (
-    <div>
+    <div className="p-8 bg-gray-100">
       <div ref={sketchRef} />
       <div>{JSON.stringify(board.grid)}</div>
     </div>

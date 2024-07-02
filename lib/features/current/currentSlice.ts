@@ -1,4 +1,4 @@
-import { BlockType } from "@/types/blocks";
+import { PieceType } from "@/types/pieces";
 import { Orientation } from "@/types/directions";
 import { createSlice } from "@reduxjs/toolkit";
 // import { getNext } from "../next/nextSlice";
@@ -8,7 +8,7 @@ const initialState = {
   //row: 21,
   row: 10,
   column: 5,
-  type: BlockType.J,
+  type: PieceType.J,
   orientation: Orientation.UP,
 };
 
@@ -31,7 +31,7 @@ const currentSlice = createSlice({
     setCurrent: (_, action) => {
       return {
         row: 20,
-        column: action.payload === BlockType.O ? 4 : 3,
+        column: action.payload === PieceType.O ? 4 : 3,
         type: action.payload,
         orientation: Orientation.UP,
       };

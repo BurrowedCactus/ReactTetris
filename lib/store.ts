@@ -3,6 +3,7 @@ import boardSlice from "./features/board/boardSlice";
 import currentSlice from "./features/current/currentSlice";
 import nextSlice from "./features/next/nextSlice";
 import lockDelaySlice from "./features/lockDelay/lockDelaySlice";
+import holdSlice from "./features/hold/holdSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -11,6 +12,7 @@ export const makeStore = () => {
       current: currentSlice,
       next: nextSlice,
       lockDelay: lockDelaySlice,
+      hold: holdSlice,
     },
   });
 };

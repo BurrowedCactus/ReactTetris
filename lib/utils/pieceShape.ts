@@ -1,28 +1,28 @@
 import { RootState } from "../store";
 import { Orientation, RotationDirection } from "@/types/directions";
-import { BlockType } from "@/types/blocks";
+import { PieceType } from "@/types/pieces";
 
 // Function to map piece types to colors
-const getColorForPiece = (type: BlockType, row: number) => {
-  if (row < 0) {
+const getColorForPiece = (type: PieceType, row?: number) => {
+  if (row !== undefined && row < 0) {
     return "#202020";
   }
   switch (type) {
-    case BlockType.I:
+    case PieceType.I:
       return "#00ffff"; // Cyan for "I" piece
-    case BlockType.J:
+    case PieceType.J:
       return "#0000ff"; // Blue for "J" piece
-    case BlockType.L:
+    case PieceType.L:
       return "#ffa500"; // Orange for "L" piece
-    case BlockType.O:
+    case PieceType.O:
       return "#ffff00"; // Yellow for "O" piece
-    case BlockType.S:
+    case PieceType.S:
       return "#00ff00"; // Green for "S" piece
-    case BlockType.T:
+    case PieceType.T:
       return "#800080"; // Purple for "T" piece
-    case BlockType.Z:
+    case PieceType.Z:
       return "#ff0000"; // Red for "Z" piece
-    case BlockType.EMPTY:
+    case PieceType._:
     default:
       return "#202020"; // Dark grey for empty space to indicate less focus
   }
@@ -30,141 +30,198 @@ const getColorForPiece = (type: BlockType, row: number) => {
 
 // Function to get shapes based on the piece type and orientation
 // remember that in tetris grid, [0,0] is the bottom left cornor,
-// for example, for faced up t tetromino, "ttt" is at the bottom, and " t " at the top.
+// for example, for faced up t tetromino, [T,T,T] is at the bottom, and [_,T,_] at the top,
+// and will be represented as [[T,T,T],[_,T,_]]
+const { I, J, L, O, S, T, Z, EMPTY: _ } = PieceType;
 const getPieceShapes = (
-  type: BlockType,
+  type: PieceType,
   orientation: Orientation,
-): string[] => {
+): PieceType[][] => {
   switch (type) {
-    case BlockType.I:
+    case I:
       switch (orientation) {
         case Orientation.UP:
         case Orientation.DOWN:
-          return ["iiii"];
+          return [[I, I, I, I]];
         case Orientation.LEFT:
         case Orientation.RIGHT:
-          return ["i", "i", "i", "i"];
+          return [[I], [I], [I], [I]];
       }
-      break;
-    case BlockType.O:
-      return ["oo", "oo"];
-    case BlockType.T:
+    case O:
+      return [
+        [O, O],
+        [O, O],
+      ];
+    case T:
       switch (orientation) {
         case Orientation.UP:
-          return ["ttt", " t "];
+          return [
+            [T, T, T],
+            [_, T, _],
+          ];
         case Orientation.DOWN:
-          return [" t ", "ttt"];
+          return [
+            [_, T, _],
+            [T, T, T],
+          ];
         case Orientation.LEFT:
-          return [" t", "tt", " t"];
+          return [
+            [_, T],
+            [T, T],
+            [_, T],
+          ];
         case Orientation.RIGHT:
-          return ["t ", "tt", "t "];
+          return [
+            [T, _],
+            [T, T],
+            [T, _],
+          ];
       }
-      break;
-    case BlockType.S:
+    case S:
       switch (orientation) {
         case Orientation.UP:
         case Orientation.DOWN:
-          return ["ss ", " ss"];
+          return [
+            [S, S, _],
+            [_, S, S],
+          ];
         case Orientation.LEFT:
         case Orientation.RIGHT:
-          return [" s", "ss", "s "];
+          return [
+            [_, S],
+            [S, S],
+            [S, _],
+          ];
       }
-      break;
-    case BlockType.Z:
+    case Z:
       switch (orientation) {
         case Orientation.UP:
         case Orientation.DOWN:
-          return [" zz", "zz "];
+          return [
+            [_, Z, Z],
+            [Z, Z, _],
+          ];
         case Orientation.LEFT:
         case Orientation.RIGHT:
-          return ["z ", "zz", " z"];
+          return [
+            [Z, _],
+            [Z, Z],
+            [_, Z],
+          ];
       }
-      break;
-    case BlockType.J:
+    case J:
       switch (orientation) {
         case Orientation.UP:
-          return ["jjj", "j  "];
+          return [
+            [J, J, J],
+            [J, _, _],
+          ];
         case Orientation.DOWN:
-          return ["  j", "jjj"];
+          return [
+            [_, _, J],
+            [J, J, J],
+          ];
         case Orientation.LEFT:
-          return ["jj", " j", " j"];
+          return [
+            [J, J],
+            [_, J],
+            [_, J],
+          ];
         case Orientation.RIGHT:
-          return ["j ", "j ", "jj"];
+          return [
+            [J, _],
+            [J, _],
+            [J, J],
+          ];
       }
-      break;
-    case BlockType.L:
+    case L:
       switch (orientation) {
         case Orientation.UP:
-          return ["lll", "  l"];
+          return [
+            [L, L, L],
+            [_, _, L],
+          ];
         case Orientation.DOWN:
-          return ["l  ", "lll"];
+          return [
+            [L, _, _],
+            [L, L, L],
+          ];
         case Orientation.LEFT:
-          return [" l", " l", "ll"];
+          return [
+            [_, L],
+            [_, L],
+            [L, L],
+          ];
         case Orientation.RIGHT:
-          return ["ll", "l ", "l "];
+          return [
+            [L, L],
+            [L, _],
+            [L, _],
+          ];
       }
-      break;
-    default:
-      throw new Error("Invalid piece type or orientation");
+    case _:
+      return [];
   }
-  return [];
 };
 
 type RotationOffset = [number, number];
 type RotationOffsetsMap = {
-  [key in BlockType]: [
+  [key in PieceType]: [
     RotationOffset,
     RotationOffset,
     RotationOffset,
     RotationOffset,
   ];
 };
-type RotationResult = [number, number, Orientation];
+type RotationResult = {
+  offsets: [number, number][];
+  newOrientation: Orientation;
+};
 
 const rotationOffsets: RotationOffsetsMap = {
-  [BlockType.I]: [
+  [PieceType.I]: [
     [-2, 2], // UP to RIGHT
     [1, -2], // RIGHT to DOWN
     [-1, 1], // DOWN to LEFT
     [2, -1], // LEFT to UP
   ],
-  [BlockType.J]: [
+  [PieceType.J]: [
     [-1, 1], // UP to RIGHT
     [0, -1], // RIGHT to DOWN
     [0, 0], // DOWN to LEFT
     [1, 0], // LEFT to UP
   ],
-  [BlockType.L]: [
+  [PieceType.L]: [
     [-1, 1], // UP to RIGHT
     [0, -1], // RIGHT to DOWN
     [0, 0], // DOWN to LEFT
     [1, 0], // LEFT to UP
   ],
-  [BlockType.O]: [
+  [PieceType.O]: [
     [0, 0], // UP to RIGHT
     [0, 0], // RIGHT to DOWN
     [0, 0], // DOWN to LEFT
     [0, 0], // LEFT to UP
   ],
-  [BlockType.S]: [
+  [PieceType.S]: [
     [-1, 1], // UP to RIGHT
     [0, -1], // RIGHT to DOWN
     [0, 0], // DOWN to LEFT
     [1, 0], // LEFT to UP
   ],
-  [BlockType.T]: [
+  [PieceType.T]: [
     [-1, 1], // UP to RIGHT
     [0, -1], // RIGHT to DOWN
     [0, 0], // DOWN to LEFT
     [1, 0], // LEFT to UP
   ],
-  [BlockType.Z]: [
+  [PieceType.Z]: [
     [-1, 1], // UP to RIGHT
     [0, -1], // RIGHT to DOWN
     [0, 0], // DOWN to LEFT
     [1, 0], // LEFT to UP
   ],
-  [BlockType.EMPTY]: [
+  [PieceType.EMPTY]: [
     [0, 0],
     [0, 0],
     [0, 0],
@@ -173,7 +230,7 @@ const rotationOffsets: RotationOffsetsMap = {
 };
 
 const getRotationOffsets = (
-  type: BlockType,
+  type: PieceType,
   currentOrientation: Orientation,
   direction: RotationDirection,
 ): RotationOffset => {
@@ -196,6 +253,56 @@ const getRotationOffsets = (
   }
 };
 
+// prettier-ignore
+const wallKickTable = {
+  [PieceType.I]: {
+    [`${Orientation.UP}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
+    [`${Orientation.RIGHT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
+    [`${Orientation.DOWN}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
+    [`${Orientation.LEFT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
+    [`${Orientation.UP}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
+    [`${Orientation.RIGHT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
+    [`${Orientation.DOWN}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
+    [`${Orientation.LEFT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
+  },
+  [PieceType.T]: {
+    [`${Orientation.UP}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+    [`${Orientation.RIGHT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+    [`${Orientation.DOWN}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+    [`${Orientation.LEFT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+    [`${Orientation.UP}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+    [`${Orientation.RIGHT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, +1], [0, +2], [-1, +2]],
+    [`${Orientation.DOWN}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+    [`${Orientation.LEFT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, -1], [0, -2], [+1, -2]],
+  },
+  // Repeat for L, S, T, Z following the pattern
+};
+
+const getWallKickData = (
+  type: PieceType,
+  currentOrientation: Orientation,
+  direction: RotationDirection,
+): RotationOffset[] => {
+  switch (type) {
+    case PieceType.I:
+      return wallKickTable[PieceType.I][
+        `${currentOrientation}+${direction}`
+      ] as RotationOffset[];
+    case PieceType.J:
+    case PieceType.L:
+    case PieceType.S:
+    case PieceType.Z:
+    case PieceType.T:
+      return wallKickTable[PieceType.T][
+        `${currentOrientation}+${direction}`
+      ] as RotationOffset[];
+    case PieceType.EMPTY:
+    case PieceType.O:
+    default:
+      return [];
+  }
+};
+
 const getNewOrientation = (
   currentOrientation: Orientation,
   direction: RotationDirection,
@@ -213,18 +320,28 @@ const getNewOrientation = (
 };
 
 const calculateRotationResult = (
-  type: BlockType,
+  type: PieceType,
   currentOrientation: Orientation,
   direction: RotationDirection,
 ): RotationResult => {
-  const offsets = getRotationOffsets(type, currentOrientation, direction);
+  const defaultOffset = getRotationOffsets(type, currentOrientation, direction);
+  const wallKicksOffsets = getWallKickData(type, currentOrientation, direction);
+
+  // Calculate new offsets including wall kicks
+  const combinedOffsets = wallKicksOffsets.map((kick) => [
+    defaultOffset[0] + kick[0],
+    defaultOffset[1] + kick[1],
+  ]) as RotationOffset[];
   const newOrientation = getNewOrientation(currentOrientation, direction);
-  return [...offsets, newOrientation];
+  return {
+    offsets: combinedOffsets,
+    newOrientation,
+  };
 };
 
 // isValidMove will consider the type of piece and its orientation for handling rotations and complex movements
 const isValidMove = (
-  pieceType: BlockType,
+  pieceType: PieceType,
   newLocation: {
     newRow: number;
     newColumn: number;
@@ -239,12 +356,11 @@ const isValidMove = (
   }
   // new shape has a location where it collides with old grid
   const shape = getPieceShapes(pieceType, newOrientation);
-  const shapeCoordinates = shape.map((str) => str.split(""));
 
   for (let i = 0; i < shape.length; ++i) {
     for (let j = 0; j < shape[i].length; ++j) {
       if (
-        shapeCoordinates[i][j] !== " " &&
+        shape[i][j] !== " " &&
         board.grid[newRow + i][newColumn + j] !== " "
       ) {
         return false;
@@ -255,30 +371,9 @@ const isValidMove = (
   return true;
 };
 
-const isTouchingBottomOrBlocked = (
-  pieceType: BlockType,
-  newLocation: {
-    newRow: number;
-    newColumn: number;
-    newOrientation: Orientation;
-  },
-  board: RootState["board"],
-): boolean => {
-  return !isValidMove(
-    pieceType,
-    {
-      newRow: newLocation.newRow - 1,
-      newColumn: newLocation.newColumn,
-      newOrientation: newLocation.newOrientation,
-    },
-    board,
-  );
-};
-
 export {
   getColorForPiece,
   getPieceShapes,
   isValidMove,
-  isTouchingBottomOrBlocked,
   calculateRotationResult,
 };

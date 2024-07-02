@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "./../../../lib/hooks";
-import { moveCurrentPiece } from "./../../../lib/features/current/currentThunk";
-import { rotateCurrentPiece } from "./../../../lib/features/current/rotateThunk";
 import { MoveDirection, RotationDirection } from "@/types/directions";
+import { useAppDispatch } from "./../../../lib/hooks";
+import {
+  dropCurrentPiece,
+  moveCurrentPiece,
+} from "./../../../lib/features/current/currentThunk";
+import { rotateCurrentPiece } from "./../../../lib/features/current/rotateThunk";
+import { holdPiece } from "./../../../lib/features/hold/holdThunk";
 
 const useTetrisControls = () => {
   const [keyPressed, setKeyPressed] = useState({
     left: false,
     right: false,
-    hold: 0,
-    hardDrop: 0,
     down: false,
     cw: false,
     ccw: false,
@@ -20,7 +22,7 @@ const useTetrisControls = () => {
     const handleKeyDown = (event) => {
       switch (event.key) {
         case "w":
-          //   dispatch(setHold())
+          dispatch(holdPiece());
           break;
         case "a":
           dispatch(moveCurrentPiece(MoveDirection.LEFT));
@@ -43,8 +45,8 @@ const useTetrisControls = () => {
           setKeyPressed((prev) => ({ ...prev, cw: true }));
           break;
         case " ":
-          //   dispatch(setHold())
-          //   setKeyPressed((prev) => ({ ...prev, hardDrop: prev.hardDrop + 1 }));
+          event.preventDefault();
+          dispatch(dropCurrentPiece());
           break;
       }
     };
@@ -84,18 +86,20 @@ const useTetrisControls = () => {
   useEffect(() => {
     let moveTimeout: NodeJS.Timeout | undefined;
     let moveInterval: NodeJS.Timeout | undefined;
-    const dasDelay = 200; // milliseconds before auto-repeat starts
-    const arrSpeed = 50; // milliseconds between moves once auto-repeat starts
+    const dasDelay = 100; // milliseconds before auto-repeat starts
+    const arrSpeed = 30; // milliseconds between moves once auto-repeat starts
 
     // Function to setup DAS and ARR
-    const setupMovement = (direction: "left" | "right" | "down") => {
-      moveTimeout = setTimeout(() => {
-        // Setup the initial delay
-        moveInterval = setInterval(() => {
-          // Setup the auto-repeat interval
-          dispatch(moveCurrentPiece(direction));
-        }, arrSpeed);
-      }, dasDelay);
+    const setupMovement = (direction: MoveDirection) => {
+      if (direction) {
+        moveTimeout = setTimeout(() => {
+          // Setup the initial delay
+          moveInterval = setInterval(() => {
+            // Setup the auto-repeat interval
+            dispatch(moveCurrentPiece(direction));
+          }, arrSpeed);
+        }, dasDelay);
+      }
     };
 
     // Determine the effective direction or null if conflicting
@@ -103,11 +107,11 @@ const useTetrisControls = () => {
       keyPressed.right === keyPressed.left
         ? null
         : keyPressed.right
-          ? "right"
+          ? MoveDirection.RIGHT
           : keyPressed.left
-            ? "left"
+            ? MoveDirection.LEFT
             : keyPressed.down
-              ? "down"
+              ? MoveDirection.DOWN
               : null;
 
     if (effectiveDirection) {

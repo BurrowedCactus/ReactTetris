@@ -1,19 +1,19 @@
+import { PieceType } from "@/types/pieces";
 import { createSlice } from "@reduxjs/toolkit";
-// import { getNext } from "../next/nextSlice";
 
 // Define the initial state of the hold
 const initialState = {
-  type: "j",
+  type: PieceType.EMPTY,
 };
 
 const holdSlice = createSlice({
   name: "hold",
   initialState,
   reducers: {
-    setHold: (state, action) => {
+    setHold: (state, action: { payload: { type: PieceType } }) => {
       return {
         ...state,
-        type: action.type,
+        type: action.payload.type,
       };
       // handle tetromino movement
     },

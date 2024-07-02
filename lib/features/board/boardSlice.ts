@@ -1,9 +1,10 @@
+import { PieceType } from "@/types/pieces";
 import { getPieceShapes } from "../../utils/pieceShape";
 import { createSlice } from "@reduxjs/toolkit";
 
 // Define the initial state of the board
 const initialState = {
-  grid: [] as string[][], // This would be a 2D array representing the Tetris grid
+  grid: [] as PieceType[][], // This would be a 2D array representing the Tetris grid
   gameStatus: "idle", // Status could be 'idle', 'running', 'paused', 'over'
   score: 0,
   level: 1,
@@ -31,7 +32,7 @@ const boardSlice = createSlice({
           // does not overlap with 'S' remains visible. This check prevents the new piece
           // from overwriting non-empty parts of the grid, preserving the visible parts of
           // underlying pieces that are not directly covered by the new piece.
-          if (newGrid[row + i][column + j] === " ") {
+          if (newGrid[row + i][column + j] === PieceType.EMPTY) {
             newGrid[row + i][column + j] = shape[i][j];
           }
         }

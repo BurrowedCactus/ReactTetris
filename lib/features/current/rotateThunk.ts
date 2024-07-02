@@ -11,58 +11,40 @@ export const rotateCurrentPiece = createAsyncThunk(
   async (direction: RotationDirection, { getState, dispatch }) => {
     const { current, board } = getState() as RootState;
     const { type, orientation, row, column } = current;
-    const [rowOffset, columnOffset, newOrientation] = calculateRotationResult(
+    const { offsets, newOrientation } = calculateRotationResult(
       type,
       orientation,
       direction,
     );
     // Check if the rotation without wall kicks is valid
-    if (
-      isValidMove(
-        type,
-        {
-          newRow: row + rowOffset,
-          newColumn: column + columnOffset,
-          newOrientation: newOrientation,
-        },
-        board,
-      )
-    ) {
-      dispatch(
-        move({
-          row: row + rowOffset,
-          column: column + columnOffset,
-          orientation: newOrientation,
-        }),
-      );
-      return;
-    }
-    // // Apply wall kicks if the initial rotation is not valid
-    // const wallKickData = getWallKickData(type, orientation, nextOrientation); // Define or import this function based on your piece data
-    // for (const [dx, dy] of wallKickData) {
-    //   if (
-    //     isValidMove(
-    //       type,
-    //       {
-    //         newRow: row + dy,
-    //         newColumn: column + dx,
-    //         newOrientation: nextOrientation,
-    //       },
-    //       board
-    //     )
-    //   ) {
-    //     dispatch(
-    //       updatePiecePosition({
-    //         row: row + dy,
-    //         column: column + dx,
-    //         orientation: nextOrientation,
-    //       })
-    //     );
-    //     return;
-    //   }
-    // }
-
-    // console.error("No valid rotation found.");
+    offsets.some((offset) => {
+      if (
+        isValidMove(
+          type,
+          {
+            newRow: row + offset[0],
+            newColumn: column + offset[1],
+            newOrientation: newOrientation,
+          },
+          board,
+        )
+      ) {
+        console.log(
+          "yes passed check move",
+          row + offset[0],
+          column + offset[1],
+        );
+        dispatch(
+          move({
+            row: row + offset[0],
+            column: column + offset[1],
+            orientation: newOrientation,
+          }),
+        );
+        return true;
+      }
+      return false;
+    });
   },
 );
 
