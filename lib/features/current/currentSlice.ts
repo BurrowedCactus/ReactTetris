@@ -30,7 +30,7 @@ const currentSlice = createSlice({
     },
     setCurrent: (_, action) => {
       return {
-        row: 20,
+        row: 21,
         column: action.payload === PieceType.O ? 4 : 3,
         type: action.payload,
         orientation: Orientation.UP,

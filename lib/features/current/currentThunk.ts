@@ -49,9 +49,8 @@ export const moveCurrentPiece = createAsyncThunk(
       ) {
         if (!lockDelay.isActive) {
           const timerId = window.setTimeout(() => {
-            console.log("yes lock piece 1");
-            dispatch(lockPiece());
-          }, 5000); // set lock delay time
+            dispatch(dropCurrentPiece());
+          }, 1000); // set lock delay time
           dispatch(startLockDelay(timerId));
         }
       } else {
@@ -96,13 +95,12 @@ export const dropCurrentPiece = createAsyncThunk(
         break;
       }
     }
-    console.log("yes lock piece 2");
-    dispatch(lockPiece());
+    dispatch(lockCurrentPiece());
   },
 );
 
-export const lockPiece = createAsyncThunk(
-  "game/lockPiece",
+export const lockCurrentPiece = createAsyncThunk(
+  "game/lockCurrentPiece",
   async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     const { current, next } = state;

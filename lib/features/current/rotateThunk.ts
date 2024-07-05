@@ -16,6 +16,7 @@ export const rotateCurrentPiece = createAsyncThunk(
       orientation,
       direction,
     );
+
     // Check if the rotation without wall kicks is valid
     offsets.some((offset) => {
       if (
@@ -29,11 +30,6 @@ export const rotateCurrentPiece = createAsyncThunk(
           board,
         )
       ) {
-        console.log(
-          "yes passed check move",
-          row + offset[0],
-          column + offset[1],
-        );
         dispatch(
           move({
             row: row + offset[0],

@@ -253,29 +253,56 @@ const getRotationOffsets = (
   }
 };
 
-// prettier-ignore
-const wallKickTable = {
-  [PieceType.I]: {
-    [`${Orientation.UP}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
-    [`${Orientation.RIGHT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
-    [`${Orientation.DOWN}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
-    [`${Orientation.LEFT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
-    [`${Orientation.UP}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
-    [`${Orientation.RIGHT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
-    [`${Orientation.DOWN}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
-    [`${Orientation.LEFT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
-  },
-  [PieceType.T]: {
-    [`${Orientation.UP}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
-    [`${Orientation.RIGHT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
-    [`${Orientation.DOWN}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
-    [`${Orientation.LEFT}+${RotationDirection.CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
-    [`${Orientation.UP}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
-    [`${Orientation.RIGHT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, +1], [0, +2], [-1, +2]],
-    [`${Orientation.DOWN}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
-    [`${Orientation.LEFT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, -1], [0, -2], [+1, -2]],
-  },
+const getWallKickTable = () => {
+  // https://tetris.wiki/Super_Rotation_System
+  // this cannot be used directly. here (x, y) means move right x unit and up y unit.
+  // however in the code base, the representation is (a, b), and a means height and b means column.
+  // if official table says [+1, +2], it means 1 unit right and 2 unit up, and therefore (2, 1) in this code base.
+  // prettier-ignore
+  const wallKickTable = {
+    [PieceType.T]: {
+      [`${Orientation.UP}+${RotationDirection.CLOCKWISE}`]:            [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+      [`${Orientation.RIGHT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+      [`${Orientation.RIGHT}+${RotationDirection.CLOCKWISE}`]:         [[0, 0], [+1, 0], [+1, -1], [0, +2], [+1, +2]],
+      [`${Orientation.DOWN}+${RotationDirection.COUNTER_CLOCKWISE}`]:  [[0, 0], [-1, 0], [-1, +1], [0, -2], [-1, -2]],
+      [`${Orientation.DOWN}+${RotationDirection.CLOCKWISE}`]:          [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+      [`${Orientation.LEFT}+${RotationDirection.COUNTER_CLOCKWISE}`]:  [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+      [`${Orientation.LEFT}+${RotationDirection.CLOCKWISE}`]:          [[0, 0], [-1, 0], [-1, -1], [0, +2], [-1, +2]],
+      [`${Orientation.UP}+${RotationDirection.COUNTER_CLOCKWISE}`]:    [[0, 0], [+1, 0], [+1, +1], [0, -2], [+1, -2]],
+    },
+    [PieceType.I]: {
+      [`${Orientation.UP}+${RotationDirection.CLOCKWISE}`]:            [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
+      [`${Orientation.RIGHT}+${RotationDirection.COUNTER_CLOCKWISE}`]: [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
+      [`${Orientation.RIGHT}+${RotationDirection.CLOCKWISE}`]:         [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
+      [`${Orientation.DOWN}+${RotationDirection.COUNTER_CLOCKWISE}`]:  [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
+      [`${Orientation.DOWN}+${RotationDirection.CLOCKWISE}`]:          [[0, 0], [+2, 0], [-1, 0], [+2, +1], [-1, -2]],
+      [`${Orientation.LEFT}+${RotationDirection.COUNTER_CLOCKWISE}`]:  [[0, 0], [-2, 0], [+1, 0], [-2, -1], [+1, +2]],
+      [`${Orientation.LEFT}+${RotationDirection.CLOCKWISE}`]:          [[0, 0], [+1, 0], [-2, 0], [+1, -2], [-2, +1]],
+      [`${Orientation.UP}+${RotationDirection.COUNTER_CLOCKWISE}`]:    [[0, 0], [-1, 0], [+2, 0], [-1, +2], [+2, -1]],
+    }
+  }
   // Repeat for L, S, T, Z following the pattern
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const formattedTable: any = {};
+  // Iterate through each piece type in the wall kick table
+  Object.entries(wallKickTable).forEach(([pieceType, orientationData]) => {
+    formattedTable[pieceType] = {};
+
+    // Iterate through each orientation and rotation direction
+    Object.entries(orientationData).forEach(([key, kickData]) => {
+      // For each set of kick data, create a new array where y is negated
+      formattedTable[pieceType][key] = kickData.map(([x, y]) => [y, x]);
+    });
+  });
+
+  return formattedTable as Record<
+    PieceType,
+    Record<
+      string,
+      [RotationOffset, RotationOffset, RotationOffset, RotationOffset]
+    >
+  >;
 };
 
 const getWallKickData = (
@@ -285,7 +312,7 @@ const getWallKickData = (
 ): RotationOffset[] => {
   switch (type) {
     case PieceType.I:
-      return wallKickTable[PieceType.I][
+      return getWallKickTable()[PieceType.I][
         `${currentOrientation}+${direction}`
       ] as RotationOffset[];
     case PieceType.J:
@@ -293,7 +320,7 @@ const getWallKickData = (
     case PieceType.S:
     case PieceType.Z:
     case PieceType.T:
-      return wallKickTable[PieceType.T][
+      return getWallKickTable()[PieceType.T][
         `${currentOrientation}+${direction}`
       ] as RotationOffset[];
     case PieceType.EMPTY:

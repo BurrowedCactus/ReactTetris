@@ -1,24 +1,25 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import boardSlice from "./features/board/boardSlice";
 import currentSlice from "./features/current/currentSlice";
 import nextSlice from "./features/next/nextSlice";
 import lockDelaySlice from "./features/lockDelay/lockDelaySlice";
 import holdSlice from "./features/hold/holdSlice";
 
-export const makeStore = () => {
+const rootReducer = combineReducers({
+  board: boardSlice,
+  current: currentSlice,
+  next: nextSlice,
+  lockDelay: lockDelaySlice,
+  hold: holdSlice,
+});
+
+export const setupStore = (preloadedState?: Partial<RootState>) => {
   return configureStore({
-    reducer: {
-      board: boardSlice,
-      current: currentSlice,
-      next: nextSlice,
-      lockDelay: lockDelaySlice,
-      hold: holdSlice,
-    },
+    reducer: rootReducer,
+    preloadedState: preloadedState,
   });
 };
 
-// Infer the type of makeStore
-export type AppStore = ReturnType<typeof makeStore>;
-// Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<AppStore["getState"]>;
+export type AppStore = ReturnType<typeof setupStore>;
+export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = AppStore["dispatch"];
