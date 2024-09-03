@@ -22,7 +22,7 @@ const getColorForPiece = (type: PieceType, row?: number) => {
       return "#800080"; // Purple for "T" piece
     case PieceType.Z:
       return "#ff0000"; // Red for "Z" piece
-    case PieceType._:
+    case PieceType.EMPTY:
     default:
       return "#202020"; // Dark grey for empty space to indicate less focus
   }

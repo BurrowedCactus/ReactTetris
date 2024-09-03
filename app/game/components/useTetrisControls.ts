@@ -19,7 +19,7 @@ const useTetrisControls = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
         case "w":
           dispatch(holdPiece());
@@ -51,7 +51,7 @@ const useTetrisControls = () => {
       }
     };
 
-    const handleKeyUp = (event) => {
+    const handleKeyUp = (event: KeyboardEvent) => {
       switch (event.key) {
         case "a":
           setKeyPressed((prev) => ({ ...prev, left: false }));
